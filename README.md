@@ -1,7 +1,7 @@
 
 # GPS_Screener
 
-The `GPS_Screener` function is a fast and versatile R-based tool for automatically detecting anomalies in GPS data. using a combination of movement metrics, optional acceleration (VeDBA or equivalent), and isolation forest models. It combines movement metrics, optional acceleration data (e.g., VeDBA), and isolation forest models to handle a wide range of GPS data complexities, including burst modes and 1 Hz recordings. Additionally, it offers visualization capabilities to inspect anomaly detection results interactively.
+The `GPS_Screener` function is a fast and versatile R-based tool for automatically detecting anomalies in GPS data. using a combination of movement metrics. It combines movement metrics, optional acceleration data (e.g., VeDBA), and isolation forest models to handle a wide range of GPS data complexities, including burst modes and 1 Hz recordings. Additionally, it offers visualization capabilities to inspect anomaly detection results interactively.
 
 ![Dynamic Plot Example](GPSScreenerLeaflet.png)
 
