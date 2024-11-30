@@ -13,14 +13,14 @@ The `GPS_Screener` function is a fast and versatile R-based tool for automatical
 
 ### Core Functionality
 - **Data Pre-Processing**:
-  - Processes GPS burst modes and standardizes GPS intervals to a consistent sampling frequency, ensuring robust anomaly detection for diverse datasets (e.g., burst modes or 1 Hz recordings)
+  - Processes GPS burst modes and standardizes GPS intervals to a consistent sampling frequency, ensuring robust anomaly detection for diverse datasets (e.g., burst modes or 1 Hz recordings).
 - **Anomaly Detection**:
   - Derives GPS movement metrics by analyzing three consecutive fixes, including outbound and inbound speed, vertex angles, and distance changes between the first and third fixes.
   - Combines within-function defined thresholds with unsupervised multi-dimensional isolation forest models.
 
 - **Acceleration Data Integration** (see *'Eobs_Data_Reader'* function to process acceleration data from Eobs devices):
   - Leverages VeDBA (or equivalent) as an optional additional metric to improve anomaly detection. 
-  - Matches acceleration data to GPS fixes, even with irregular or non-aligned timestamps, and calculates mean VeDBA for preceding intervals. (See the *Eobs_Data_Reader* function for pre-processing acceleration data from e-obs devices.)
+  - Matches acceleration data to GPS fixes, even with irregular or non-aligned timestamps, and calculates mean VeDBA for preceding intervals. (See the *Eobs_Data_Reader* function for pre-processing acceleration data from e-obs devices).
   - Requires both GPS and acceleration timestamps to be in the same POSIXct format (Y-m-d H:M:S or Y-m-d H:M:OS).
 
 - **Interactive Visualization**:
@@ -51,11 +51,11 @@ The `GPS_Screener` function is a fast and versatile R-based tool for automatical
 7. **`standardise_universal`**: Logical value (TRUE/FALSE) indicating whether **`'standardise_time_interval'`** is applied across all GPS data or restricted to continuous 1 Hz periods (default = FALSE).
 7. **`IF_conf`**: Numeric confidence level for isolation forest anomaly detection (default = 0.99).
 8. **`iso_sample_size`**: Numeric value for the sample size used in the isolation forest model (default = 256).
-9. **`GPS_height`**: Numeric vector of GPS height values matching the length of GPS data (default = NULL).
+9. **`GPS_height`**: Numeric vector of GPS height values matching the length of GPS data (default = NULL). This is used as an additional parameter within the anomaly detection.
 10. **`start_timestamp`**: POSIXct value for subsetting data, defining the start of the time range (optional; but must be used with `end_timestamp`).
 11. **`end_timestamp`**: POSIXct value for subsetting data, defining the end of the time range (optional; but must be used with `start_timestamp`).
 12. **`max_speed`**: Numeric value defining the maximum biologically plausible speed (in m/s) for the species of interest (default = 5).
-13. **`GPS_accuracy`**: Numeric value estimating the GPS error radius (in meters) under stationary conditions (default = 25). A value of 25 m is recommended based on empirical data for forested habitats.
+13. **`GPS_accuracy`**: Numeric value estimating the GPS error radius (in meters) under stationary conditions (default = 25). A value of 25 m is recommended based on empirical data for forested habitats. Recommended to not make this value smaller than 10 m.
 14. **`plot`**: Logical value (TRUE/FALSE) indicating whether to generate diagnostic plots (default = TRUE).
 
 ---
@@ -69,9 +69,9 @@ A **data frame** containing:
 3. **`Time_diff`**: Time difference (in seconds) between consecutive GPS fixes.
 4. **`GPS_longitude`** & **`GPS_latitude`**: Raw GPS coordinates (in decimal degrees).
 5. **`Fix_number`**:  Relative order of each kept processed GPS fix per burst or continuous 1 Hz data collection session (unless **`standardise_time_interval`** was used).
-6. **`Window_group`**: Grouping variable which incremented each time the cumualtive time exceeded the **`drop_out`** threshold
+6. **`Window_group`**: Grouping variable which incremented each time the cumualtive time exceeded the **`drop_out`** threshold.
 7. **`orig_burst_length`**: The original length (in seconds) of each burst or continuous GPS session prior to processing.
-8. **`GPS_longitude_filtered`** & **`GPS_latitude_filtered`**: GPS coordinates (in decimal degrees), corresponding to the processed values
+8. **`GPS_longitude_filtered`** & **`GPS_latitude_filtered`**: GPS coordinates (in decimal degrees), corresponding to the processed values.
 9. **`Time_diff_filtered`**: Represents the time interval (s) between filtered GPS fixes but is replicated across all rows associated with each fix group.
 10. **`Ang_vertex`**: The turning angle (in degrees) at each fix, calculated using three consecutive GPS points. Values range from 0° to 180°, where higher angles indicate sharper turns.
 11. **`Outgoing_speed`**: Movement speeds (in meters per second) calculated between the current GPS fix and the following one.
@@ -103,6 +103,8 @@ df$timestamp = as.POSIXct(df$timestamp, format = "%Y-%m-%d %H:%M:%S")
 head(df$timestamp, 1) ; tail(df$timestamp, 1)
 # Ensure no duplicated time stamps
 df<-df[!duplicated(df[c("timestamp")]),]
+# make sure no NAs in timestamp
+df = subset(df, !is.na(df$timestamp))
 # Ensure GPS data are sorted by time
 df <- df %>% arrange(timestamp) 
 
@@ -115,6 +117,8 @@ df.acc$interpolated_timestamp = as.POSIXct(df.acc$interpolated_timestamp, format
 head(df.acc$interpolated_timestamp, 1) ; tail(df.acc$interpolated_timestamp, 1)
 # Filter out potentially duplicated timestamps and short ACC bursts  
 df.acc = subset(df.acc, df.acc$duplicate_times == FALSE & df.acc$standardized_burst_duration >= 5)
+# make sure no NAs in timestamp
+df.acc = subset(df.acc, !is.na(df.acc$interpolated_timestamp))
 
 # Group by standardized_burst_id and compute mean VeDBA and median interpolated_timestamp to obtain a single mean value per burst
 df.acc_summary <- df.acc %>%
