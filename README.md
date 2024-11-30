@@ -43,7 +43,7 @@ The `GPS_Screener` function is a fast and versatile R-based tool for automatical
 
 ### Optional Inputs
 1. **`ACC_TS`**: POSIXct vector of acceleration timestamps. If supplied, it must match the format of GPS_TS (Y-m-d H:M:S or Y-m-d H:M:OS) and cannot contain NAs (default = NULL).
-2. **`VeDBA`**: Numeric vector of VeDBA (or equivalent activity metric) values matching the length of `ACC_TS` (default = NULL)..
+2. **`VeDBA`**: Numeric vector of VeDBA (or equivalent activity metric) values matching the length of `ACC_TS` (default = NULL).
 3. **`drop_out`**: Numeric value (in seconds) defining the maximum temporal gap for identifying large drop-outs in GPS data (default = 3600). Although its functionality is not actively used in the function, the output includes a corresponding column for reference.
 4. **`burst_method`**: Character string specifying the method for processing GPS bursts. Options include "median", "mean", "last", or "none" (default = "last").
 5. **`burst_len`**: Numeric value (seconds) for defining the typical maximum burst durations (default = 1).
