@@ -567,12 +567,16 @@ GPS_Screener = function(GPS_TS,  GPS_longitude,  GPS_latitude,  ACC_TS = NULL, V
     df$Verdict_IF <- ifelse(
       df$Verdict_IF == "Anomalous" & 
         !is.na(df$mean_VeDBA_interval) & 
-        df$mean_VeDBA_interval >= quantile(df$mean_VeDBA_interval, 0.95, na.rm = TRUE) &
-        (!is.na(df$Outgoing_speed) & df$Outgoing_speed >= quantile(df$Outgoing_speed, 0.95, na.rm = TRUE) | 
-           !is.na(df$Incoming_speed) & df$Incoming_speed >= quantile(df$Incoming_speed, 0.95, na.rm = TRUE)) &
+        df$mean_VeDBA_interval >= quantile(df$mean_VeDBA_interval, 0.9, na.rm = TRUE) &
+        (!is.na(df$Outgoing_speed) & df$Outgoing_speed >= quantile(df$Outgoing_speed, 0.9, na.rm = TRUE) | 
+           !is.na(df$Incoming_speed) & df$Incoming_speed >= quantile(df$Incoming_speed, 0.9, na.rm = TRUE)) &
         !is.na(df$Ang_vertex) & df$Ang_vertex < 150,  # Additional condition for Ang_vertex
-      "Not Anomalous",
-      df$Verdict_IF
+      "Not Anomalous", ifelse(df$Verdict_IF == "Anomalous" & 
+                                is.na(df$mean_VeDBA_interval) & 
+                                (!is.na(df$Outgoing_speed) & df$Outgoing_speed >= quantile(df$Outgoing_speed, 0.9, na.rm = TRUE) | 
+                                   !is.na(df$Incoming_speed) & df$Incoming_speed >= quantile(df$Incoming_speed, 0.9, na.rm = TRUE)) &
+                                !is.na(df$Ang_vertex) & df$Ang_vertex < 150,
+                              "Not Anomalous", df$Verdict_IF)
     )
     # Correct for genuine spikes in GPS during rest
     df$Verdict_IF <- ifelse(
@@ -580,15 +584,18 @@ GPS_Screener = function(GPS_TS,  GPS_longitude,  GPS_latitude,  ACC_TS = NULL, V
         !is.na(df$Ang_vertex) & df$Ang_vertex >= 170 & 
         !is.na(df$Dist_circular) & df$Dist_circular <= GPS_accuracy & 
         !is.na(df$mean_VeDBA_interval) & df$mean_VeDBA_interval < quantile(df$mean_VeDBA_interval, 0.25, na.rm = TRUE),
-      "Anomalous",
-      df$Verdict_IF
+      "Anomalous", ifelse(df$Verdict_IF == "Not Anomalous" & 
+                            !is.na(df$Ang_vertex) & df$Ang_vertex >= 170 & 
+                            !is.na(df$Dist_circular) & df$Dist_circular <= GPS_accuracy & 
+                            is.na(df$mean_VeDBA_interval),
+                          "Anomalous", df$Verdict_IF)
     )
   } else {
     # Correct for genuine high, directed travelling movement (without VeDBA)
     df$Verdict_IF <- ifelse(
       df$Verdict_IF == "Anomalous" & 
-        (!is.na(df$Outgoing_speed) & df$Outgoing_speed >= quantile(df$Outgoing_speed, 0.95, na.rm = TRUE) | 
-           !is.na(df$Incoming_speed) & df$Incoming_speed >= quantile(df$Incoming_speed, 0.95, na.rm = TRUE)) &
+        (!is.na(df$Outgoing_speed) & df$Outgoing_speed >= quantile(df$Outgoing_speed, 0.9, na.rm = TRUE) | 
+           !is.na(df$Incoming_speed) & df$Incoming_speed >= quantile(df$Incoming_speed, 0.9, na.rm = TRUE)) &
         !is.na(df$Ang_vertex) & df$Ang_vertex < 150,  # Additional condition for Ang_vertex
       "Not Anomalous",
       df$Verdict_IF
@@ -598,8 +605,8 @@ GPS_Screener = function(GPS_TS,  GPS_longitude,  GPS_latitude,  ACC_TS = NULL, V
       df$Verdict_IF == "Not Anomalous" & 
         !is.na(df$Ang_vertex) & df$Ang_vertex >= 170 & 
         !is.na(df$Dist_circular) & df$Dist_circular <= GPS_accuracy & 
-        (!is.na(df$Outgoing_speed) & df$Outgoing_speed <= quantile(df$Outgoing_speed, 0.05, na.rm = TRUE) |
-           !is.na(df$Incoming_speed) & df$Incoming_speed <= quantile(df$Incoming_speed, 0.05, na.rm = TRUE)),
+        (!is.na(df$Outgoing_speed) & df$Outgoing_speed <= quantile(df$Outgoing_speed, 0.1, na.rm = TRUE) |
+           !is.na(df$Incoming_speed) & df$Incoming_speed <= quantile(df$Incoming_speed, 0.1, na.rm = TRUE)),
       "Anomalous",
       df$Verdict_IF
     )
@@ -610,7 +617,7 @@ GPS_Screener = function(GPS_TS,  GPS_longitude,  GPS_latitude,  ACC_TS = NULL, V
   df$Verdict_IF <- ifelse(
     df$Verdict_IF == "Not Anomalous" & 
       !is.na(df$Ang_vertex) & df$Ang_vertex >= 175 & 
-      !is.na(df$Dist_circular) & df$Dist_circular <= quantile(df$Dist_circular, 0.05, na.rm = TRUE),
+      !is.na(df$Dist_circular) & df$Dist_circular <= quantile(df$Dist_circular, 0.1, na.rm = TRUE),
     "Anomalous",
     df$Verdict_IF
   )
